@@ -82,6 +82,7 @@ void loop()
             case 0x5:
             case 0x2:
             case 0x7:
+                Serial.print("iets");
                 break;
         }
     }
