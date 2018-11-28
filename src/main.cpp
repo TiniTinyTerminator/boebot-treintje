@@ -91,6 +91,15 @@ void loop()
 
 void LightS(void)
 {
+    int L, R;
+    L = analogRead(PLSL);
+    R = analogRead(PLSR);
+
+    if (L <= 0) IR |= 1UL << 2;
+    else IR &= ~(1 << 2);
+      
+    if (R <= 0) IR |= 1UL << 1;
+    else IR &= ~(1 << 1);
 }
 
 void infraRedS(void)
