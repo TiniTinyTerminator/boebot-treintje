@@ -95,27 +95,27 @@ void LightS(void)
     L = analogRead(PLSL);
     R = analogRead(PLSR);
 
-    if (L <= 0) IR |= 1UL << 2;
+    if (L > 0) IR |= 1UL << 2;
     else IR &= ~(1 << 2);
       
-    if (R <= 0) IR |= 1UL << 1;
+    if (R > 0) IR |= 1UL << 1;
     else IR &= ~(1 << 1);
 }
 
 void infraRedS(void)
 {
     int L, R, M;
-    L = analogRead(PIRL);
-    R = analogRead(PIRR);
-    M = analogRead(PIRM);
+    L = pulseIn(PIRL, LOW, 20);
+    R = pulseIn(PIRR, LOW, 20);
+    M = pulseIn(PIRM, LOW, 20);
 
-    if (L <= 0) IR |= 1UL << 3;
+    if (L > 0) IR |= 1UL << 3;
     else IR &= ~(1 << 3);
     
-    if (M <= 0) IR |= 1UL << 2;
+    if (M > 0) IR |= 1UL << 2;
     else IR &= ~(1 << 2);
       
-    if (R <= 0) IR |= 1UL << 1;
+    if (R > 0) IR |= 1UL << 1;
     else IR &= ~(1 << 1);
 }
 
