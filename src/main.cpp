@@ -50,7 +50,7 @@ void loop()
     // if laser is seen set laser to true. does not change when laser is not visible anymore
     laser = (LS || !laser) ? 1 : 0;
     // if LS or laser is greater than 0, 
-    if (LS || laser) {
+    if (laser) {
         switch(LS) {
             // if both are 1
             case 0x3:
