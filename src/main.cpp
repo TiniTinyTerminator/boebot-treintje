@@ -164,7 +164,16 @@ void setMotors(char left, char right)
         break;
     }
 
-    
+    // right servo
+    digitalWrite(PSR, HIGH);
+    delayMicroseconds(1500 + R);
+    digitalWrite(PSR, LOW);
+
+    // left servo
+    digitalWrite(PSL, HIGH);
+    delayMicroseconds(1500 + R);
+    digitalWrite(PSL, LOW);
+    delay(2);
 }
 
 unsigned long distanceS(void)
