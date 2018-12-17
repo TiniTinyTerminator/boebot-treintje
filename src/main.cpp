@@ -50,7 +50,7 @@ void loop()
     delay(200);
 
     // if laser is seen SET variable laser. does not change when laser is not visible anymore
-    laser = (LS || !laser) ? 1 : 0;
+    laser = (LS || laser) ? 1 : 0;
     // if LS or laser is greater than 0
     if (laser)
     {
