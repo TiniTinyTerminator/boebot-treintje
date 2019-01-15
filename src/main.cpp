@@ -10,19 +10,26 @@ unsigned long USS; // distance in cm for HC-SR04
 // declare functions
 void LightS(void);
 void infraRedS(void);
-void setMotors(char left, char right);
-long unsigned distanceS(void);
+void setMotors(signed char left, signed char right);
+void distanceS(void);
 bool laser;
 
-byte PLSR = A0, // light sensor left
-    PLSM = A1,  // light sensor middle
-    PLSL = A1,  // light sensor right
-    PIRL = A2,  // infrared sensor left
-    PIRR = A3,  // infrared sensor right
-    PECHO = 6,  // HC-SR04 output signal
-    PTRIG = 5,  // HC-SR04 input signal
-    PSL = 10,   // servo left
-    PSR = 11;   // servo right
+byte PLIRL = 13, // LED left IR-sensor
+    PLIRR = 2,   // LED Right IR-sensor
+    PLERR = 8,   // LED ERROR
+    PLLSR = 7,   // LED Right Light-sensor
+    PLLSL = 3,   // LED Left Light-sensor
+    PLLSM = 4,   // LED Middle Light-sensor
+    PLUSS = 12,  // LED Ultasoon-sensor
+    PLSR = A0,   // light sensor left
+    PLSM = A1,   // light sensor middle
+    PLSL = A2,   // light sensor right
+    PIRL = A3,   // infrared sensor left
+    PIRR = A4,   // infrared sensor right
+    PECHO = 6,   // HC-SR04 output signal
+    PTRIG = 5,   // HC-SR04 input signal
+    PSL = 10,    // servo left
+    PSR = 11;    // servo right
 
 void setup()
 {
@@ -36,6 +43,9 @@ void setup()
     //  set ultrasonic sensor
     pinMode(PTRIG, OUTPUT);
     pinMode(PECHO, INPUT);
+    // set servo output
+    pinMode(PSL, OUTPUT);
+    pinMode(PSR, OUTPUT);
 
     Serial.begin(9600);
 }
@@ -47,98 +57,107 @@ void loop()
     LightS();
     infraRedS();
     distanceS();
-    delay(200);
+    delay(100);
 
-    // if laser is seen SET variable laser. does not change when laser is not visible anymore
-    laser = (LS || laser) ? 1 : 0;
-    // if LS or laser is greater than 0
-    if (laser)
-    {
-        // if distance is longer than 5 cm
-        if (USS >= 5)
-        {
-            switch (LS)
-            {
-                // if left and mid or only left see the laser
-            case 0x1:
-            case 0x3:
-                if (USS <= 10)
-                    setMotors(1, 0);
-                else
-                    setMotors(2, 1);
-                break;
+    Serial.print(LS, BIN);
+    Serial.print("\n");
+    Serial.print(USS, DEC);
+    Serial.print("\n");
+    Serial.print(IR, BIN);
+    Serial.print("\n\n");
 
-                // if right and mid or only right see the laser
-            case 0x4:
-            case 0x6:
-                if (USS <= 10)
-                    setMotors(0, 2);
-                else
-                    setMotors(1, 2);
-                break;
+    setMotors(-1, -1);
 
-                // if mid or outer or all see the laser
-            case 0x5:
-            case 0x2:
-            case 0x7:
-                if (USS <= 10)
-                    setMotors(1, 1);
-                else
-                    setMotors(2, 2);
-                break;
+    // // if laser is seen SET variable laser. does not change when laser is not visible anymore
+    // laser = (LS || laser) ? 1 : 0;
+    // // if LS or laser is greater than 0
+    // if (laser)
+    // {
+    // if distance is longer than 5 cm
+    // if (USS >= 7)
+    // {
+    //     switch (LS)
+    //     {
+    //         // if left and mid or only left see the laser
+    //     case 0x1:
+    //     case 0x3:
+    //         if (USS <= 10)
+    //             setMotors(1, 0);
+    //         else
+    //             setMotors(2, 1);
+    //         break;
 
-                // if laser disappeard
-            case 0x0:
+    //         // if right and mid or only right see the laser
+    //     case 0x4:
+    //     case 0x6:
+    //         if (USS <= 10)
+    //             setMotors(0, 2);
+    //         else
+    //             setMotors(1, 2);
+    //         break;
 
-                break;
-            }
-        }
-        // if distance is closer then 5cm
-        else
-        {
-            // stop for a bit to let the leader get some distance
-            setMotors(0, 0);
-        }
-    }
+    //         // if mid or outer or all see the laser
+    //     case 0x5:
+    //     case 0x2:
+    //     case 0x7:
+    //         if (USS <= 10)
+    //             setMotors(1, 1);
+    //         else
+    //             setMotors(2, 2);
+    //         break;
 
-    else
-    {
-        if (USS >= 5)
-        {
-            switch (IR)
-            {
-            // if both are 1
-            case 0x3:
-                if (USS <= 5)
-                    setMotors(1, 1);
-                else
-                    setMotors(2, 2);
-                break;
-            // if right is 1
-            case 0x2:
-                if (USS <= 5)
-                    setMotors(1, 1);
-                else
-                    setMotors(2, 2);
-                break;
-            //if left is 1
-            case 0x1:
-                if (USS <= 5)
-                    setMotors(1, 1);
-                else
-                    setMotors(2, 2);
-                break;
-            // if none are 1
-            case 0x0:
-                setMotors(-2, 2);
-                break;
-            }
-        }
-        else
-        {
-            setMotors(0, 0);
-        }
-    }
+    //         // if laser disappeard
+    //     case 0x0:
+
+    //         break;
+    //     }
+    // }
+    // // if distance is closer then 5cm
+    // else
+    // {
+    //     // stop for a bit to let the leader get some distance
+    //     setMotors(0, 0);
+    // }
+    // }
+
+    // else
+    // {
+    //     if (USS >= 10)
+    //     {
+    //         switch (IR)
+    //         {
+    //         // if both are 1
+    //         case 0x3:
+    //             if (USS <= 8)
+    //                 setMotors(1, 1);
+    //             else
+    //                 setMotors(2, 2);
+    //             break;
+    //         // if right is 1
+    //         case 0x2:
+    //             if (USS <= 8)
+    //                 setMotors(1, 1);
+    //             else
+    //                 setMotors(2, 2);
+    //             break;
+    //         //if left is 1
+    //         case 0x1:
+    //             if (USS <= 8)
+    //                 setMotors(1, 1);
+    //             else
+    //                 setMotors(2, 2);
+    //             break;
+    //         // if none are 1
+    //         case 0x0:
+    //             setMotors(-2, 2);
+    //             break;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         setMotors(0, 0);
+    //     }
+    // }
 }
 
 void infraRedS(void)
@@ -170,76 +189,71 @@ void LightS(void)
     R = analogRead(PLSR);
     M = analogRead(PLSM);
 
-    if (L > 0)
+    if (L > 100)
         LS |= 1UL << 2;
     else
         LS &= ~(1 << 2);
 
-    if (M > 0)
+    if (M > 400)
         LS |= 1UL << 1;
     else
         LS &= ~(1 << 1);
 
-    if (R > 0)
+    if (R > 100)
         LS |= 1UL << 0;
     else
         LS &= ~(1 << 0);
 }
 
-void setMotors(char left = 0, char right = 0)
+void setMotors(signed char left = 0, signed char right = 0)
 {
-    int R = 0, L = 0;
+
     switch (right)
     {
-    case 1:
     case 2:
-        R = pow(right + 3, 4) / 6;
+        analogWrite(PSR, 200);
+        break;
+    case 1:
+        analogWrite(PSR, 140);
         break;
     case -1:
+        analogWrite(PSR, 125);
+        break;
     case -2:
-        R = pow(right - 3, 4) / 6;
+        analogWrite(PSR, 100);
         break;
     default:
-        R = 0;
+        analogWrite(PSR, 127);
         break;
     }
     switch (left)
     {
-    case 1:
     case 2:
-        L = pow(left + 3, 4) / 6;
+        analogWrite(PSL, 100);
+        break;
+    case 1:
+        analogWrite(PSL, 125);
         break;
     case -1:
+        analogWrite(PSL, 137);
+        break;
     case -2:
-        L = pow(left - 3, 4) / 6;
+        analogWrite(PSL, 200);
         break;
     default:
-        L = 0;
+        analogWrite(PSL, 127);
         break;
     }
-
-    // right servo
-    digitalWrite(PSR, HIGH);
-    delayMicroseconds(1500 + R);
-    digitalWrite(PSR, LOW);
-
-    // left servo
-    digitalWrite(PSL, HIGH);
-    delayMicroseconds(1500 + L);
-    digitalWrite(PSL, LOW);
-    delay(2);
 }
 
-unsigned long distanceS(void)
+void distanceS(void)
 {
-    digitalWrite(PTRIG, LOW);
-    delayMicroseconds(2);
     // send trigger signal
     digitalWrite(PTRIG, HIGH);
-    delayMicroseconds(10);
+    delay(10);
     digitalWrite(PTRIG, LOW);
     // reveive signal
-    unsigned long i = pulseIn(PECHO, HIGH, 30);
-    USS = i * 0.034 / 2;
-    return USS;
+    unsigned long i = pulseInLong(PECHO, HIGH);
+    if (i * 0.034 / 2 > 0 && i * 0.034 / 2 < 250)
+        USS = i * 0.034 / 2;
 }
