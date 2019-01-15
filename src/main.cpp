@@ -4,7 +4,7 @@
 
 char LS; // hecadecimal for the 2 lightsensors
 char IR; // hexadecimal for the 3 infraredsensors
-
+char LEDS;
 unsigned long USS; // distance in cm for HC-SR04
 
 // declare functions
@@ -14,18 +14,18 @@ void setMotors(signed char left, signed char right);
 void distanceS(void);
 bool laser;
 
-byte PLIRL = 13, // LED left IR-sensor
-    PLIRR = 2,   // LED Right IR-sensor
-    PLERR = 8,   // LED ERROR
-    PLLSR = 7,   // LED Right Light-sensor
-    PLLSL = 3,   // LED Left Light-sensor
-    PLLSM = 4,   // LED Middle Light-sensor
-    PLUSS = 12,  // LED Ultasoon-sensor
-    PLSR = A0,   // light sensor left
-    PLSM = A1,   // light sensor middle
-    PLSL = A2,   // light sensor right
-    PIRL = A3,   // infrared sensor left
-    PIRR = A4,   // infrared sensor right
+byte PLIRL = 13, // LED left IR-sensor (LEDS << 0)
+    PLIRR = 2,   // LED Right IR-sensor (LEDS << 1)
+    PLERR = 8,   // LED ERROR (LEDS << 2)
+    PLLSR = 7,   // LED Right Light-sensor (LEDS << 3)
+    PLLSL = 3,   // LED Left Light-sensor (LEDS << 4)
+    PLLSM = 4,   // LED Middle Light-sensor (LEDS << 5)
+    PLUSS = 12,  // LED Ultasoon-sensor (LEDS << 6)
+    PLSR = A0,   // light sensor left (LS << 0)
+    PLSM = A1,   // light sensor middle (LS << 1)
+    PLSL = A2,   // light sensor right (LS << 2)
+    PIRL = A3,   // infrared sensor left (IR << 0)
+    PIRR = A4,   // infrared sensor right (IR << 1)
     PECHO = 6,   // HC-SR04 output signal
     PTRIG = 5,   // HC-SR04 input signal
     PSL = 10,    // servo left
@@ -46,7 +46,14 @@ void setup()
     // set servo output
     pinMode(PSL, OUTPUT);
     pinMode(PSR, OUTPUT);
-
+    // set LEDS
+    pinMode(PLIRL, OUTPUT);
+    pinMode(PLIRR, OUTPUT);
+    pinMode(PLERR, OUTPUT);
+    pinMode(PLLSR, OUTPUT);
+    pinMode(PLLSL, OUTPUT);
+    pinMode(PLLSM, OUTPUT);
+    pinMode(PLUSS, OUTPUT);
     Serial.begin(9600);
 }
 // the loop function runs over and over again until power down or reset
@@ -65,8 +72,6 @@ void loop()
     Serial.print("\n");
     Serial.print(IR, BIN);
     Serial.print("\n\n");
-
-    setMotors(-1, -1);
 
     // // if laser is seen SET variable laser. does not change when laser is not visible anymore
     // laser = (LS || laser) ? 1 : 0;
@@ -164,17 +169,17 @@ void infraRedS(void)
 {
     // read analog signals for IR sensors
     int L, R;
-    L = analogRead(PIRL);
-    R = analogRead(PIRR);
+    L = pulseIn(PIRL, HIGH);
+    R = pulseIn(PIRR, HIGH);
 
-    if (L > 10)
+    if (L)
         // set 2th bit
         IR |= 1UL << 1;
     else
         // unset 2th bit
         IR &= ~(1 << 1);
 
-    if (R > 10)
+    if (R)
         // set 1st bit
         IR |= 1UL << 0;
     else
@@ -256,4 +261,101 @@ void distanceS(void)
     unsigned long i = pulseInLong(PECHO, HIGH);
     if (i * 0.034 / 2 > 0 && i * 0.034 / 2 < 250)
         USS = i * 0.034 / 2;
+}
+
+void setLEDS()
+{
+    switch (IR)
+    {
+    case 0x1: // left IR
+        digitalWrite(PLIRL ,HIGH);
+        digitalWrite(PLIRR, LOW);
+        break;
+    case 0x2: // right IR
+        digitalWrite(PLIRR, HIGH);
+        digitalWrite(PLIRL, LOW);
+        break;
+    case 0x3:
+        digitalWrite(PLIRL, HIGH);
+        digitalWrite(PLIRR, HIGH);
+        break;
+    default:
+        digitalWrite(PLIRL, LOW);
+        digitalWrite(PLIRR, LOW);
+    }
+
+    // switch (LS)
+    // {
+    // case 0x1: // left LS
+    //     digitalWrite(PLLSL, HIGH);
+    //     digitalWrite(PLLSM, LOW);;
+    //     digitalWrite(PLLSM, LOW);
+    //     break;
+    // case 0x2: // Middle LS
+    //     digitalWrite(PLLSR, HIGH);
+    //     digitalWrite(PLLSL, LOW);
+    //     digitalWrite(PLLSM, LOW);
+    //     break;
+    // case 0x3:
+    //     digitalWrite(PLLSL, HIGH);
+    //     digitalWrite(PLLSR, HIGH);
+    //     digitalWrite(PLLSM, LOW);
+    //     break;
+    // case 0x4: // right LS
+    //     digitalWrite(PLLSR, HIGH);
+    //     digitalWrite(PLLSL, LOW);
+    //     digitalWrite(PLLSM, LOW);
+    //     break;
+    // case 0x5:
+    //     digitalWrite(PLLSL, HIGH);
+    //     digitalWrite(PLLSM, HIGH);
+    //     digitalWrite(PLLSM, LOW);;
+    //     break;
+    // case 0x6:
+    //     digitalWrite(PLLSR, HIGH);
+    //     digitalWrite(PLLSM, HIGH);
+    //     digitalWrite(PLLSL, LOW);
+    //     break;
+    // case 0x7:
+    //     digitalWrite(PLLSL, HIGH);
+    //     digitalWrite(PLLSR, HIGH);
+    //     digitalWrite(PLLSM, HIGH);
+    //     break;
+    // default:
+    //     digitalWrite(PLLSL, LOW);
+    //     digitalWrite(PLLSM, LOW);
+    //     digitalWrite(PLLSM, LOW);
+    // }
+
+    switch (LS)
+    {
+    case 1UL << 0:
+        digitalWrite(PLLSL, HIGH);
+    case 1UL << 1:
+        digitalWrite(PLLSM, HIGH);
+    case 1UL << 2:
+        digitalWrite(PLLSR, HIGH);
+    case ~(1UL << 0):
+        digitalWrite(PLLSL, LOW);
+    case ~(1UL << 1):
+        digitalWrite(PLLSM, LOW);
+    case ~(1UL << 2):
+        digitalWrite(PLLSR, LOW);
+    }
+
+    switch(IR) {
+        case 1UL << 0:
+            digitalWrite(PLIRL, HIGH);
+        case 1UL << 1:
+            digitalWrite(PLIRR, HIGH);
+        case ~(1UL << 0):
+            digitalWrite(PLIRL, LOW);
+        case ~(1UL << 1):
+            digitalWrite(PLIRR, LOW);
+    }
+
+    if(USS <= 10) 
+        digitalWrite(PLUSS, HIGH);
+    else 
+        digitalWrite(PLUSS, LOW);
 }
