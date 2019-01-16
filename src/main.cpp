@@ -73,96 +73,96 @@ void loop()
     Serial.print(IR, BIN);
     Serial.print("\n\n");
 
-    // // if laser is seen SET variable laser. does not change when laser is not visible anymore
-    // laser = (LS || laser) ? 1 : 0;
-    // // if LS or laser is greater than 0
-    // if (laser)
-    // {
-    // if distance is longer than 5 cm
-    // if (USS >= 7)
-    // {
-    //     switch (LS)
-    //     {
-    //         // if left and mid or only left see the laser
-    //     case 0x1:
-    //     case 0x3:
-    //         if (USS <= 10)
-    //             setMotors(1, 0);
-    //         else
-    //             setMotors(2, 1);
-    //         break;
+    // if laser is seen SET variable laser. does not change when laser is not visible anymore
+    laser = (LS || laser) ? 1 : 0;
+    // if LS or laser is greater than 0
+    if (laser)
+    {
+        // if distance is longer than 5 cm
+        if (USS >= 7)
+        {
+            switch (LS)
+            {
+                // if left and mid or only left see the laser
+            case 0x1:
+            case 0x3:
+                if (USS <= 10)
+                    setMotors(1, 0);
+                else
+                    setMotors(2, 1);
+                break;
 
-    //         // if right and mid or only right see the laser
-    //     case 0x4:
-    //     case 0x6:
-    //         if (USS <= 10)
-    //             setMotors(0, 2);
-    //         else
-    //             setMotors(1, 2);
-    //         break;
+                // if right and mid or only right see the laser
+            case 0x4:
+            case 0x6:
+                if (USS <= 15)
+                    setMotors(0, 2);
+                else
+                    setMotors(1, 2);
+                break;
 
-    //         // if mid or outer or all see the laser
-    //     case 0x5:
-    //     case 0x2:
-    //     case 0x7:
-    //         if (USS <= 10)
-    //             setMotors(1, 1);
-    //         else
-    //             setMotors(2, 2);
-    //         break;
+                // if mid or outer or all see the laser
+            case 0x5:
+            case 0x2:
+            case 0x7:
+                if (USS <= 15)
+                    setMotors(1, 1);
+                else
+                    setMotors(2, 2);
+                break;
 
-    //         // if laser disappeard
-    //     case 0x0:
+                // if laser disappeard
+            case 0x0:
 
-    //         break;
-    //     }
-    // }
-    // // if distance is closer then 5cm
-    // else
-    // {
-    //     // stop for a bit to let the leader get some distance
-    //     setMotors(0, 0);
-    // }
-    // }
+                break;
+            }
+        }
+        // if distance is closer then 5cm
+        else
+        {
+            // stop for a bit to let the leader get some distance
+            setMotors(0, 0);
+        }
+    }
 
-    // else
-    // {
-    //     if (USS >= 10)
-    //     {
-    //         switch (IR)
-    //         {
-    //         // if both are 1
-    //         case 0x3:
-    //             if (USS <= 8)
-    //                 setMotors(1, 1);
-    //             else
-    //                 setMotors(2, 2);
-    //             break;
-    //         // if right is 1
-    //         case 0x2:
-    //             if (USS <= 8)
-    //                 setMotors(1, 1);
-    //             else
-    //                 setMotors(2, 2);
-    //             break;
-    //         //if left is 1
-    //         case 0x1:
-    //             if (USS <= 8)
-    //                 setMotors(1, 1);
-    //             else
-    //                 setMotors(2, 2);
-    //             break;
-    //         // if none are 1
-    //         case 0x0:
-    //             setMotors(-2, 2);
-    //             break;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         setMotors(0, 0);
-    //     }
-    // }
+    else
+    {
+        if (USS >= 10)
+        {
+            switch (IR)
+            {
+            // if both are 1
+            case 0x3:
+                if (USS <= 8)
+                    setMotors(1, 1);
+                else
+                    setMotors(2, 2);
+                break;
+            // if right is 1
+            case 0x2:
+                if (USS <= 8)
+                    setMotors(1, 1);
+                else
+                    setMotors(2, 2);
+                break;
+            //if left is 1
+            case 0x1:
+                if (USS <= 8)
+                    setMotors(1, 1);
+                else
+                    setMotors(2, 2);
+                break;
+            // if none are 1
+            case 0x0:
+                setMotors(-2, 2);
+                break;
+            }
+        }
+        else
+        {
+            setMotors(0, 0);
+        }
+    }
 }
 
 void infraRedS(void)
@@ -265,97 +265,31 @@ void distanceS(void)
 
 void setLEDS()
 {
-    switch (IR)
-    {
-    case 0x1: // left IR
-        digitalWrite(PLIRL ,HIGH);
-        digitalWrite(PLIRR, LOW);
-        break;
-    case 0x2: // right IR
-        digitalWrite(PLIRR, HIGH);
-        digitalWrite(PLIRL, LOW);
-        break;
-    case 0x3:
-        digitalWrite(PLIRL, HIGH);
-        digitalWrite(PLIRR, HIGH);
-        break;
-    default:
-        digitalWrite(PLIRL, LOW);
-        digitalWrite(PLIRR, LOW);
-    }
 
-    // switch (LS)
-    // {
-    // case 0x1: // left LS
-    //     digitalWrite(PLLSL, HIGH);
-    //     digitalWrite(PLLSM, LOW);;
-    //     digitalWrite(PLLSM, LOW);
-    //     break;
-    // case 0x2: // Middle LS
-    //     digitalWrite(PLLSR, HIGH);
-    //     digitalWrite(PLLSL, LOW);
-    //     digitalWrite(PLLSM, LOW);
-    //     break;
-    // case 0x3:
-    //     digitalWrite(PLLSL, HIGH);
-    //     digitalWrite(PLLSR, HIGH);
-    //     digitalWrite(PLLSM, LOW);
-    //     break;
-    // case 0x4: // right LS
-    //     digitalWrite(PLLSR, HIGH);
-    //     digitalWrite(PLLSL, LOW);
-    //     digitalWrite(PLLSM, LOW);
-    //     break;
-    // case 0x5:
-    //     digitalWrite(PLLSL, HIGH);
-    //     digitalWrite(PLLSM, HIGH);
-    //     digitalWrite(PLLSM, LOW);;
-    //     break;
-    // case 0x6:
-    //     digitalWrite(PLLSR, HIGH);
-    //     digitalWrite(PLLSM, HIGH);
-    //     digitalWrite(PLLSL, LOW);
-    //     break;
-    // case 0x7:
-    //     digitalWrite(PLLSL, HIGH);
-    //     digitalWrite(PLLSR, HIGH);
-    //     digitalWrite(PLLSM, HIGH);
-    //     break;
-    // default:
-    //     digitalWrite(PLLSL, LOW);
-    //     digitalWrite(PLLSM, LOW);
-    //     digitalWrite(PLLSM, LOW);
-    // }
-
-    switch (LS)
-    {
-    case 1UL << 0:
+    if (LS & 0x1)
         digitalWrite(PLLSL, HIGH);
-    case 1UL << 1:
-        digitalWrite(PLLSM, HIGH);
-    case 1UL << 2:
-        digitalWrite(PLLSR, HIGH);
-    case ~(1UL << 0):
+    else
         digitalWrite(PLLSL, LOW);
-    case ~(1UL << 1):
+    if (LS & 0x2)
+        digitalWrite(PLLSM, HIGH);
+    else
         digitalWrite(PLLSM, LOW);
-    case ~(1UL << 2):
+    if (LS & 0x4)
+        digitalWrite(PLLSR, HIGH);
+    else
         digitalWrite(PLLSR, LOW);
-    }
 
-    switch(IR) {
-        case 1UL << 0:
-            digitalWrite(PLIRL, HIGH);
-        case 1UL << 1:
-            digitalWrite(PLIRR, HIGH);
-        case ~(1UL << 0):
-            digitalWrite(PLIRL, LOW);
-        case ~(1UL << 1):
-            digitalWrite(PLIRR, LOW);
-    }
+    if (IR & 0x1)
+        digitalWrite(PLIRL, HIGH);
+    else
+        digitalWrite(PLIRL, LOW);
+    if (IR & 0x2)
+        digitalWrite(PLIRR, HIGH);
+    else
+        digitalWrite(PLIRR, LOW);
 
-    if(USS <= 10) 
+    if (USS <= 10)
         digitalWrite(PLUSS, HIGH);
-    else 
+    else
         digitalWrite(PLUSS, LOW);
 }
