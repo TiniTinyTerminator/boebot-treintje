@@ -2,8 +2,8 @@
 
 // the setup function runs once when you press reset or power the board
 
-char LS; // hecadecimal for the 2 lightsensors
-char IR; // hexadecimal for the 3 infraredsensors
+char LS; // binary for the 2 lightsensors
+char IR; // binary for the 3 infraredsensors
 char LEDS;
 unsigned long USS; // distance in cm for HC-SR04
 
@@ -15,20 +15,24 @@ void distanceS(void);
 void setLEDS(void);
 bool laser;
 
-byte PLIRL = 13, // LED left IR-sensor
-    PLIRR = 2,   // LED Right IR-sensor
-    PLERR = 8,   // LED ERROR
-    PLLSR = 7,   // LED Right Light-sensor
-    PLLSL = 3,   // LED Left Light-sensor
-    PLLSM = 4,   // LED Middle Light-sensor 
-    PLUSS = 12,  // LED Ultasoon-sensor 
-    PLSR = A0,   // light sensor left       (LS << 0)
-    PLSM = A1,   // light sensor middle     (LS << 1)
-    PLSL = A2,   // light sensor right      (LS << 2)
-    PIRL = A3,   // infrared sensor left    (IR << 0)
-    PIRR = A4,   // infrared sensor right   (IR << 1)
-    PECHO = 6,   // HC-SR04 output signal
-    PTRIG = 5,   // HC-SR04 input signal
+byte PLIRL = 13, // left IR-sensor
+    PLIRR = 2,   // Right IR-sensor
+    PLERR = 8,   // ERROR
+    PLLSR = 7,   // Right Light-sensor
+    PLLSL = 3,   // Left Light-sensor
+    PLLSM = 4,   // Middle Light-sensor
+    PLUSS = 12,  // Ultasoon-sensor
+    // light sensors
+    PLSR = A0,   // left       (LS << 0)
+    PLSM = A1,   // middle     (LS << 1)
+    PLSL = A2,   // right      (LS << 2)
+    // IR-transistors
+    PIRL = A3,   //  left    (IR << 0)
+    PIRR = A4,   //  right   (IR << 1)
+    //  HC-SR04
+    PECHO = 6,   // output signal
+    PTRIG = 5,   // input signal
+
     PSL = 10,    // servo left
     PSR = 11;    // servo right
 
@@ -38,7 +42,7 @@ void setup()
     pinMode(PLSR, INPUT);
     pinMode(PLSL, INPUT);
     pinMode(PLSM, INPUT);
-    //	set inputs infrared sensors
+    //	set inputs s
     pinMode(PIRL, INPUT);
     pinMode(PIRR, INPUT);
     //  set ultrasonic sensor
@@ -65,7 +69,6 @@ void loop()
     LightS();
     infraRedS();
     distanceS();
-    delay(100);
 
     Serial.print(LS, BIN);
     Serial.print("\n");
@@ -171,8 +174,8 @@ void infraRedS(void)
 {
     // read analog signals for IR sensors
     int L, R;
-    L = pulseIn(PIRL, HIGH);
-    R = pulseIn(PIRR, HIGH);
+    L = pulseIn(PIRL, HIGH, 5000);
+    R = pulseIn(PIRR, HIGH, 5000);
 
     if (L)
         // set 2th bit
@@ -196,12 +199,12 @@ void LightS(void)
     R = analogRead(PLSR);
     M = analogRead(PLSM);
 
-    if (L > 100)
+    if (L > 200)
         LS |= 1UL << 2;
     else
         LS &= ~(1 << 2);
 
-    if (M > 400)
+    if (M > 270)
         LS |= 1UL << 1;
     else
         LS &= ~(1 << 1);
@@ -260,38 +263,19 @@ void distanceS(void)
     delay(10);
     digitalWrite(PTRIG, LOW);
     // reveive signal
-    unsigned long i = pulseInLong(PECHO, HIGH);
-    if (i * 0.034 / 2 > 0 && i * 0.034 / 2 < 250)
-        USS = i * 0.034 / 2;
+    unsigned long i = pulseInLong(PECHO, HIGH, 50000);
+    USS = (i * 0.034 / 2 > 0 && i * 0.034 / 2 < 250) ? i * 0.034 / 2 : USS;
 }
 
 void setLEDS(void)
 {
 
-    if (LS & 0x1)
-        digitalWrite(PLLSL, HIGH);
-    else
-        digitalWrite(PLLSL, LOW);
-    if (LS & 0x2)
-        digitalWrite(PLLSM, HIGH);
-    else
-        digitalWrite(PLLSM, LOW);
-    if (LS & 0x4)
-        digitalWrite(PLLSR, HIGH);
-    else
-        digitalWrite(PLLSR, LOW);
+    digitalWrite(PLLSL, (LS & 0x1) ? HIGH : LOW);
+    digitalWrite(PLLSM, (LS & 0x2) ? HIGH : LOW);
+    digitalWrite(PLLSR, (LS & 0x3) ? HIGH : LOW);
 
-    if (IR & 0x1)
-        digitalWrite(PLIRL, HIGH);
-    else
-        digitalWrite(PLIRL, LOW);
-    if (IR & 0x2)
-        digitalWrite(PLIRR, HIGH);
-    else
-        digitalWrite(PLIRR, LOW);
+    digitalWrite(PLIRL, (IR & 0x1) ? HIGH : LOW);
+    digitalWrite(PLIRR, (LS & 0x2) ? HIGH : LOW);
 
-    if (USS <= 10)
-        digitalWrite(PLUSS, HIGH);
-    else
-        digitalWrite(PLUSS, LOW);
+    digitalWrite(PLUSS, ((laser && USS <= 7) || USS <= 10) ? HIGH : LOW);
 }
