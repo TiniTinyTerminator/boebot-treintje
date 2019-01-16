@@ -12,20 +12,21 @@ void LightS(void);
 void infraRedS(void);
 void setMotors(signed char left, signed char right);
 void distanceS(void);
+void setLEDS(void);
 bool laser;
 
-byte PLIRL = 13, // LED left IR-sensor (LEDS << 0)
-    PLIRR = 2,   // LED Right IR-sensor (LEDS << 1)
-    PLERR = 8,   // LED ERROR (LEDS << 2)
-    PLLSR = 7,   // LED Right Light-sensor (LEDS << 3)
-    PLLSL = 3,   // LED Left Light-sensor (LEDS << 4)
-    PLLSM = 4,   // LED Middle Light-sensor (LEDS << 5)
-    PLUSS = 12,  // LED Ultasoon-sensor (LEDS << 6)
-    PLSR = A0,   // light sensor left (LS << 0)
-    PLSM = A1,   // light sensor middle (LS << 1)
-    PLSL = A2,   // light sensor right (LS << 2)
-    PIRL = A3,   // infrared sensor left (IR << 0)
-    PIRR = A4,   // infrared sensor right (IR << 1)
+byte PLIRL = 13, // LED left IR-sensor
+    PLIRR = 2,   // LED Right IR-sensor
+    PLERR = 8,   // LED ERROR
+    PLLSR = 7,   // LED Right Light-sensor
+    PLLSL = 3,   // LED Left Light-sensor
+    PLLSM = 4,   // LED Middle Light-sensor 
+    PLUSS = 12,  // LED Ultasoon-sensor 
+    PLSR = A0,   // light sensor left       (LS << 0)
+    PLSM = A1,   // light sensor middle     (LS << 1)
+    PLSL = A2,   // light sensor right      (LS << 2)
+    PIRL = A3,   // infrared sensor left    (IR << 0)
+    PIRR = A4,   // infrared sensor right   (IR << 1)
     PECHO = 6,   // HC-SR04 output signal
     PTRIG = 5,   // HC-SR04 input signal
     PSL = 10,    // servo left
@@ -163,6 +164,7 @@ void loop()
             setMotors(0, 0);
         }
     }
+    setLEDS();
 }
 
 void infraRedS(void)
@@ -263,7 +265,7 @@ void distanceS(void)
         USS = i * 0.034 / 2;
 }
 
-void setLEDS()
+void setLEDS(void)
 {
 
     if (LS & 0x1)
