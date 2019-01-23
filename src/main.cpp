@@ -281,5 +281,5 @@ void setLEDS(void) {
 
   digitalWrite(PLUSS, ((laser && USS <= 7) || USS <= 10) ? HIGH : LOW);\
 
-  digitalWrite(PLERR, ((IR == 0x0 || (LS == 0x0 && laser) || USS == 0 || USS >= 240) ? HIGH : LOW));
+  digitalWrite(PLERR, (((IR == 0x0 && !laser) || (LS == 0x0 && laser) || USS == 0 || USS >= 240) ? HIGH : LOW));
 }
