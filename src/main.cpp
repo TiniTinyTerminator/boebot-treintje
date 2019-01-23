@@ -36,7 +36,8 @@ byte PLIRL = 2, // left IR-sensor
     PSL = 10, // servo left
     PSR = 11; // servo right
 
-void setup() {
+void setup()
+{
   //	set inputs light sensors
   pinMode(PLSR, INPUT);
   pinMode(PLSL, INPUT);
@@ -67,7 +68,8 @@ void setup() {
 
 int i = 0;
 
-void loop() {
+void loop()
+{
   // set sensor variables
   if (!laser)
     infraRedS();
@@ -85,11 +87,14 @@ void loop() {
   // visible anymore
   laser = (LS || laser) ? 1 : 0;
   // if LS or laser is greater than 0
-  
-  if (laser) {
+
+  if (laser)
+  {
     // if distance is longer than 7 cm
-    if (USS >= 7) {
-      switch (LS) {
+    if (USS >= 7)
+    {
+      switch (LS)
+      {
         // if left and mid or only left see the laser
       case 0x3:
       case 0x1:
@@ -123,15 +128,19 @@ void loop() {
       }
     }
     // if distance is closer then 5cm
-    else {
+    else
+    {
       // stop. the job is done.
       setMotors(0, 0);
     }
   }
 
-  else {
-    if (USS >= 10) {
-      switch (IR) {
+  else
+  {
+    if (USS >= 10)
+    {
+      switch (IR)
+      {
       // if both are 1
       case 0x3:
         i = 0;
@@ -167,7 +176,9 @@ void loop() {
 
         break;
       }
-    } else {
+    }
+    else
+    {
       setMotors(-2, -2);
     }
   }
@@ -179,7 +190,8 @@ void loop() {
   // Serial.print("\n");
 }
 
-void infraRedS(void) {
+void infraRedS(void)
+{
   // read analog signals for IR sensors
   int L, R;
   L = pulseIn(PIRL, HIGH, 75000);
@@ -200,7 +212,8 @@ void infraRedS(void) {
     IR &= ~(1 << 0);
 }
 
-void LightS(void) {
+void LightS(void)
+{
   int L, R, M;
   L = analogRead(PLSL);
   R = analogRead(PLSR);
@@ -222,9 +235,11 @@ void LightS(void) {
     LS &= ~(1 << 0);
 }
 
-void setMotors(signed char left = 0, signed char right = 0) {
+void setMotors(signed char left = 0, signed char right = 0)
+{
 
-  switch (right) {
+  switch (right)
+  {
   case 2:
     analogWrite(PSR, 100);
     break;
@@ -241,7 +256,8 @@ void setMotors(signed char left = 0, signed char right = 0) {
     analogWrite(PSR, 127);
     break;
   }
-  switch (left) {
+  switch (left)
+  {
   case 2:
     analogWrite(PSL, 150);
     break;
@@ -260,7 +276,8 @@ void setMotors(signed char left = 0, signed char right = 0) {
   }
 }
 
-void distanceS(void) {
+void distanceS(void)
+{
   // send trigger signal
   digitalWrite(PTRIG, HIGH);
   delay(10);
@@ -270,7 +287,8 @@ void distanceS(void) {
   USS = (i * 0.034 / 2 > 0 && i * 0.034 / 2 < 250) ? i * 0.034 / 2 : USS;
 }
 
-void setLEDS(void) {
+void setLEDS(void)
+{
 
   digitalWrite(PLLSL, (LS & 0x1) ? HIGH : LOW);
   digitalWrite(PLLSM, (LS & 0x2) ? HIGH : LOW);
@@ -279,7 +297,7 @@ void setLEDS(void) {
   digitalWrite(PLIRL, (IR & 0x1) ? HIGH : LOW);
   digitalWrite(PLIRR, (IR & 0x2) ? HIGH : LOW);
 
-  digitalWrite(PLUSS, ((laser && USS <= 7) || USS <= 10) ? HIGH : LOW);\
+  digitalWrite(PLUSS, ((laser && USS <= 7) || USS <= 10) ? HIGH : LOW);
 
   digitalWrite(PLERR, (((IR == 0x0 && !laser) || (LS == 0x0 && laser) || USS == 0 || USS >= 240) ? HIGH : LOW));
 }
