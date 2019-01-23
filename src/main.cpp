@@ -1,5 +1,26 @@
 #include <Arduino.h>
 
+// pin declaration
+#define PLIRL 2  // left IR-sensor
+#define PLIRR 13 // Right IR-sensor
+#define PLERR 8  // ERROR
+#define PLLSR 7  // Right Light-sensor
+#define PLLSL 3  // Left Light-sensor
+#define PLLSM 4  // Middle Light-sensor
+#define PLUSS 12 // Ultasoon-sensor
+// light sensors
+#define PLSR A0 // left       (LS << 0)
+#define PLSM A1 // middle     (LS << 1)
+#define PLSL A2 // right      (LS << 2)
+// IR-transistors
+#define PIRL A3 //  left    (IR << 0)
+#define PIRR A4 //  right   (IR << 1)
+//  HC-SR04
+#define PECHO 6 // output signal
+#define PTRIG 5 // input signal
+
+#define PSL 10 // servo left
+#define PSR 11 // servo right
 // the setup function runs once when you press reset or power the board
 
 char LS; // binary for the 2 lightsensors
@@ -15,28 +36,8 @@ void distanceS(void);
 void setLEDS(void);
 bool laser;
 
-byte PLIRL = 2, // left IR-sensor
-    PLIRR = 13, // Right IR-sensor
-    PLERR = 8,  // ERROR
-    PLLSR = 7,  // Right Light-sensor
-    PLLSL = 3,  // Left Light-sensor
-    PLLSM = 4,  // Middle Light-sensor
-    PLUSS = 12, // Ultasoon-sensor
-    // light sensors
-    PLSR = A0, // left       (LS << 0)
-    PLSM = A1, // middle     (LS << 1)
-    PLSL = A2, // right      (LS << 2)
-    // IR-transistors
-    PIRL = A3, //  left    (IR << 0)
-    PIRR = A4, //  right   (IR << 1)
-    //  HC-SR04
-    PECHO = 6, // output signal
-    PTRIG = 5, // input signal
-
-    PSL = 10, // servo left
-    PSR = 11; // servo right
-
-void setup() {
+void setup()
+{
   //	set inputs light sensors
   pinMode(PLSR, INPUT);
   pinMode(PLSL, INPUT);
@@ -67,54 +68,38 @@ void setup() {
 
 int i = 0;
 
-void loop() {
+void loop()
+{
   // set sensor variables
   if (!laser)
     infraRedS();
   LightS();
   distanceS();
 
-  // Serial.print(LS, BIN);
-  // Serial.print("\n");
-  // Serial.print(USS, DEC);
-  // Serial.print("\n");
-  // Serial.print(IR, BIN);
-  // Serial.print("\n\n");
-
   // if laser is seen SET variable laser. does not change when laser is not
   // visible anymore
   laser = (LS || laser) ? 1 : 0;
   // if LS or laser is greater than 0
 
-  if (laser) {
+  if (laser)
+  {
     // if distance is longer than 7 cm
-    if (USS >= 7) {
-      switch (LS) {
-        // if left and mid or only left see the laser
-      case 0x3:
+    if (USS >= 15)
+    {
+      switch (LS)
+      {
       case 0x1:
-        if (USS <= 15)
-          setMotors(0, 1);
-        else
-          setMotors(0, 2);
+        setMotors(0, 1);
         break;
         // if right and mid or only right see the laser
-      case 0x6:
       case 0x4:
-        if (USS <= 15)
-          setMotors(1, 0);
-        else
-          setMotors(2, 0);
-
+        setMotors(1, 0);
         break;
         // if mid or outer or all see the laser
       case 0x5:
       case 0x2:
       case 0x7:
-        if (USS <= 15)
-          setMotors(1, 1);
-        else
-          setMotors(2, 2);
+        setMotors(2, 2);
         break;
 
         // if laser disappeard
@@ -123,15 +108,19 @@ void loop() {
       }
     }
     // if distance is closer then 5cm
-    else {
+    else
+    {
       // stop. the job is done.
       setMotors(0, 0);
     }
   }
 
-  else if (!laser) {
-    if (USS >= 10) {
-      switch (IR) {
+  else if (!laser)
+  {
+    if (USS >= 10)
+    {
+      switch (IR)
+      {
       // if both are 1
       case 0x3:
         i = 0;
@@ -162,20 +151,25 @@ void loop() {
       // if none are 1
       case 0x0:
         i++;
-        if (i < 1000)
-          setMotors(-2, 2);
-
+        if (i < 800)
+          setMotors(-1, 1);
         break;
       }
-    } else {
-      setMotors(-2, -2);
+    }
+    else
+    {
+      if (USS <= 5)
+        setMotors(-2, -2);
+      else
+        setMotors(0, 0);
     }
   }
   setLEDS();
   Serial.println(USS);
 }
 
-void infraRedS(void) {
+void infraRedS(void)
+{
   // read analog signals for IR sensors
   int L, R;
   L = pulseIn(PIRL, HIGH, 75000);
@@ -196,33 +190,36 @@ void infraRedS(void) {
     IR &= ~(1 << 0);
 }
 
-void LightS(void) {
+void LightS(void)
+{
   int L, R, M;
   L = analogRead(PLSL);
   R = analogRead(PLSR);
   M = analogRead(PLSM);
 
-  if (L > 110)
+  if (L > 90)
     LS |= 1UL << 2;
   else
     LS &= ~(1 << 2);
 
-  if (M > 110)
+  if (M > 80)
     LS |= 1UL << 1;
   else
     LS &= ~(1 << 1);
 
-  if (R > 110)
+  if (R > 80)
     LS |= 1UL << 0;
   else
     LS &= ~(1 << 0);
 }
 
-void setMotors(signed char left = 0, signed char right = 0) {
+void setMotors(signed char left = 0, signed char right = 0)
+{
 
-  switch (right) {
+  switch (right)
+  {
   case 2:
-    analogWrite(PSR, 100);
+    analogWrite(PSR, 80);
     break;
   case 1:
     analogWrite(PSR, 120);
@@ -237,7 +234,8 @@ void setMotors(signed char left = 0, signed char right = 0) {
     analogWrite(PSR, 127);
     break;
   }
-  switch (left) {
+  switch (left)
+  {
   case 2:
     analogWrite(PSL, 150);
     break;
@@ -248,7 +246,7 @@ void setMotors(signed char left = 0, signed char right = 0) {
     analogWrite(PSL, 120);
     break;
   case -2:
-    analogWrite(PSL, 100);
+    analogWrite(PSL, 80);
     break;
   default:
     analogWrite(PSL, 127);
@@ -256,17 +254,19 @@ void setMotors(signed char left = 0, signed char right = 0) {
   }
 }
 
-void distanceS(void) {
+void distanceS(void)
+{
   // send trigger signal
   digitalWrite(PTRIG, HIGH);
   delay(10);
   digitalWrite(PTRIG, LOW);
   // reveive signal
-  unsigned long i = pulseInLong(PECHO, HIGH, 50000);
+  unsigned long i = pulseInLong(PECHO, HIGH, 75000);
   USS = (i * 0.034 / 2 > 0 && i * 0.034 / 2 < 250) ? i * 0.034 / 2 : USS;
 }
 
-void setLEDS(void) {
+void setLEDS(void)
+{
 
   digitalWrite(PLLSL, (LS & 0x1) ? HIGH : LOW);
   digitalWrite(PLLSM, (LS & 0x2) ? HIGH : LOW);
@@ -277,7 +277,7 @@ void setLEDS(void) {
 
   digitalWrite(PLUSS, ((laser && USS <= 7) || USS <= 10) ? HIGH : LOW);
 
-  digitalWrite(PLERR, (((IR != 0x0 && laser) || (LS != 0x0 && laser) ||
+  digitalWrite(PLERR, (((IR != 0x0 && laser) || (LS != 0x0 && !laser) ||
                         (USS > 1 && USS < 200))
                            ? LOW
                            : HIGH));
