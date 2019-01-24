@@ -83,16 +83,18 @@ void loop()
 
   if (laser)
   {
-    // if distance is longer than 7 cm
-    if (USS >= 15)
+    // if distance is longer than 8 cm
+    if (USS >= 8)
     {
       switch (LS)
       {
       case 0x1:
+      case 0x3:
         setMotors(0, 1);
         break;
         // if right and mid or only right see the laser
       case 0x4:
+      case 0x6:
         setMotors(1, 0);
         break;
         // if mid or outer or all see the laser
@@ -101,7 +103,6 @@ void loop()
       case 0x7:
         setMotors(2, 2);
         break;
-
         // if laser disappeard
       case 0x0:
         break;
@@ -172,8 +173,8 @@ void infraRedS(void)
 {
   // read analog signals for IR sensors
   int L, R;
-  L = pulseIn(PIRL, HIGH, 75000);
-  R = pulseIn(PIRR, HIGH, 75000);
+  L = checkPulse(PIRL, HIGH, 75);
+  R = checkPulse(PIRR, HIGH, 75);
 
   if (L)
     // set 2th bit
@@ -193,9 +194,9 @@ void infraRedS(void)
 void LightS(void)
 {
   int L, R, M;
-  L = analogRead(PLSL);
-  R = analogRead(PLSR);
-  M = analogRead(PLSM);
+  L = analogPulseIn(PLSL, HIGH, 90, 80);
+  R = analogPulseIn(PLSR, HIGH, 80, 80);;
+  M = analogPulseIn(PLSM, HIGH, 80, 80);;
 
   if (L > 90)
     LS |= 1UL << 2;
@@ -222,7 +223,7 @@ void setMotors(signed char left = 0, signed char right = 0)
     analogWrite(PSR, 80);
     break;
   case 1:
-    analogWrite(PSR, 120);
+    analogWrite(PSR, 119);
     break;
   case -1:
     analogWrite(PSR, 139);
@@ -240,7 +241,7 @@ void setMotors(signed char left = 0, signed char right = 0)
     analogWrite(PSL, 150);
     break;
   case 1:
-    analogWrite(PSL, 137);
+    analogWrite(PSL, 135);
     break;
   case -1:
     analogWrite(PSL, 120);
@@ -254,6 +255,7 @@ void setMotors(signed char left = 0, signed char right = 0)
   }
 }
 
+
 void distanceS(void)
 {
   // send trigger signal
@@ -261,8 +263,55 @@ void distanceS(void)
   delay(10);
   digitalWrite(PTRIG, LOW);
   // reveive signal
-  unsigned long i = pulseInLong(PECHO, HIGH, 75000);
+  unsigned long i = checkPulse(PECHO, HIGH, 75);
   USS = (i * 0.034 / 2 > 0 && i * 0.034 / 2 < 250) ? i * 0.034 / 2 : USS;
+}
+
+int checkPulse(char pin, bool i, unsigned long maxTime = 1000) {
+
+	unsigned long startMillis = millis();
+
+  // wait for previous signal to end
+	while (digitalRead(pin) == i) {
+		if (millis() - startMillis > maxTime)
+			return 0;
+	}
+  // wait for signal to respond
+	while (digitalRead(pin) != i) {
+		if (millis() - startMillis > maxTime)
+			return 0;
+	}
+
+	unsigned long start = millis();
+
+	while (digitalRead(pin) == i) {
+		if (millis() - startMillis > maxTime)
+			return 0;
+	}
+	return millis() - start;
+}
+
+int analogPulseIn(char pin, bool j, bool i = 480, unsigned long maxTime = 1000) {
+
+	unsigned long startMillis = millis();
+
+	while ((analogRead(pin) >= i) == j) {
+		if (millis() - startMillis > maxTime)
+			return 0;
+	}
+
+	while ((analogRead(pin) >= i) != j) {
+		if (millis() - startMillis > maxTime)
+			return 0;
+	}
+
+	unsigned long start = millis();
+
+	while ((analogRead(pin) >= i) == j) {
+		if (millis() - startMillis > maxTime)
+			return 0;
+	}
+	return millis() - start;
 }
 
 void setLEDS(void)
